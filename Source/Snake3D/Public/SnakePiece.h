@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "SnakePiece.generated.h"
 
+#define SPEED 2
 
 UCLASS()
 class SNAKE3D_API ASnakePiece : public AActor
@@ -28,22 +29,20 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void AddMovementTag(AMovementTag* tag);
 
 	UPROPERTY()
 		class UMyPawnMovementComponent* OurMovementComponent;
 
 	FGameplayTag Tag;
-
-	TArray<AMovementTag*> movementQueue;
-
 	bool isLast;
 
-	float PitchValue, YawValue, RollValue;
+private:
+
 	float Radius;
-
+	TArray<AMovementTag*> movementQueue;
 	void MoveForward(float AxisValue);
-
-	void UpdateRotation(float PitchValueG, float YawValueG, float RollValueG);
-	void AddMovementTag(AMovementTag* tag);
+	void UpdateRotation(FRotator rotation);
 	void CheckRotation();
+	void SpecialMove();
 };

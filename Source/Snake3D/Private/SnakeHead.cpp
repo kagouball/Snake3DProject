@@ -2,16 +2,17 @@
 
 
 #include "SnakeHead.h"
-
-#include "MyPawnMovementComponent.h"
-#include "MovementTag.h"
-#include "PlayField.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/SphereComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Runtime/Engine/Classes/GameFramework/InputSettings.h"
+
+#include "MyPawnMovementComponent.h"
+#include "MovementTag.h"
+#include "PlayField.h"
+#include "PlayerHUD.h"
 
 // Sets default values
 ASnakeHead::ASnakeHead()
@@ -23,7 +24,9 @@ ASnakeHead::ASnakeHead()
 	YawValue = 0.f;
 	RollValue = 0.f;
 	radius = 20;
+	Score = 0;
 	isCameraMoving = false;
+	personMode = TPS;
 	if (!Field) {
 		Field = NULL;
 	}
@@ -66,14 +69,13 @@ ASnakeHead::ASnakeHead()
 void ASnakeHead::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void ASnakeHead::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	MoveForward(2);
+	MoveForward(SPEED);
 	UpdateRotation();
 }
 
@@ -81,17 +83,19 @@ void ASnakeHead::Tick(float DeltaTime)
 void ASnakeHead::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAxis("MoveRight", this, &ASnakeHead::Turn);
+	//Axis
 	PlayerInputComponent->BindAxis("TurnCameraRight", this, &ASnakeHead::TurnRightCamera);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ASnakeHead::Turn);
 	PlayerInputComponent->BindAxis("MoveTop", this, &ASnakeHead::MoveTop);
 	PlayerInputComponent->BindAxis("Rotate", this, &ASnakeHead::Rotate);
+	//Button
 	PlayerInputComponent->BindAction("SpawnObject", IE_Pressed, this, &ASnakeHead::ButtonPush);
+	PlayerInputComponent->BindAction("SwitchPersonView", IE_Pressed, this, &ASnakeHead::SwitchCameraPersonView);
+	//Angle
 	PlayerInputComponent->BindAction("AngleRight", IE_Pressed, this, &ASnakeHead::AngleRight);
 	PlayerInputComponent->BindAction("AngleLeft", IE_Pressed, this, &ASnakeHead::AngleLeft);
 	PlayerInputComponent->BindAction("AngleTop", IE_Pressed, this, &ASnakeHead::AngleTop);
 	PlayerInputComponent->BindAction("AngleBottom", IE_Pressed, this, &ASnakeHead::AngleBottom);
-
 }
 
 void ASnakeHead::ButtonPush()
@@ -109,7 +113,6 @@ void ASnakeHead::ButtonPush()
 	SpawnPiece(newPos, rotation);
 }
 
-
 //Movement
 
 UPawnMovementComponent* ASnakeHead::GetMovementComponent() const
@@ -119,75 +122,30 @@ UPawnMovementComponent* ASnakeHead::GetMovementComponent() const
 
 void ASnakeHead::MoveForward(float AxisValue)
 {
+	float FrameRate = 1 / GetWorld()->GetDeltaSeconds();
 	FVector loc = GetActorLocation();
-	loc += GetActorForwardVector() * AxisValue;
+	loc += GetActorForwardVector() * (AxisValue*100)/FrameRate;
 	SetActorLocation(loc);
-	//UE_LOG(LogTemp, Warning, TEXT("ForwardVec Piece: %s"), *GetActorForwardVector().ToString());
-	/*
-	if (OurMovementComponent && (OurMovementComponent->UpdatedComponent == RootComponent))
-	{
-		OurMovementComponent->AddInputVector(GetActorForwardVector() * AxisValue);
-	}*/
-}
-
-void ASnakeHead::MoveRight(float AxisValue)
-{
-	if (OurMovementComponent && (OurMovementComponent->UpdatedComponent == RootComponent))
-	{
-		OurMovementComponent->AddInputVector(GetActorRightVector() * AxisValue);
-	}
 }
 
 void ASnakeHead::Turn(float AxisValue)
 {
-	/*
-	FRotator NewRotation = GetActorRotation();
-	NewRotation.Yaw += AxisValue;
-	SetActorRotation(NewRotation);
-	*/
 	if (AxisValue != 0) {
 		YawValue += AxisValue;
-		//UpdateRotation();
 	}
 }
 
 void ASnakeHead::MoveTop(float AxisValue)
 {
-	/*
-	FRotator NewRotation = GetActorRotation();
-	NewRotation.Pitch += AxisValue;
-	SetActorRotation(NewRotation);*/
 	if (AxisValue != 0) {//permet de ne pas update à tous les tick
 		PitchValue += AxisValue;
-		//UpdateRotation();
 	}
 }
 
 void ASnakeHead::Rotate(float AxisValue)
 {
-	/*
-	FRotator NewRotation = GetActorRotation();
-	NewRotation.Roll += AxisValue;
-	SetActorRotation(NewRotation);*/
 	if (AxisValue != 0) {
 		RollValue += AxisValue;
-		//UpdateRotation();
-	}
-}
-
-void ASnakeHead::UpdateRotation() {
-	if (YawValue != 0 || PitchValue != 0 || RollValue != 0) {
-		//Update rotation
-		FQuat QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue));
-		AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
-		//Spawn tag
-		//SpawnMovementTag(PitchValue, YawValue, RollValue); //Manière 1 d'update la rotation d'une piece
-		if (LastPiece) {
-			SpawnMovementTag(GetActorRotation().Pitch, GetActorRotation().Yaw, GetActorRotation().Roll);
-		}
-		YawValue = 0;
-		RollValue = 0;
-		PitchValue = 0;
 	}
 }
 
@@ -209,6 +167,21 @@ void ASnakeHead::AngleRight()
 void ASnakeHead::AngleLeft()
 {
 	Turn(-90);
+}
+
+void ASnakeHead::UpdateRotation() {
+	if (YawValue != 0 || PitchValue != 0 || RollValue != 0) {
+		//Update rotation
+		FQuat QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue));
+		AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
+		//Spawn tag
+		if (LastPiece) {
+			SpawnMovementTag();
+		}
+		YawValue = 0;
+		RollValue = 0;
+		PitchValue = 0;
+	}
 }
 
 //Camera movement
@@ -238,32 +211,57 @@ void ASnakeHead::UpdateCamera() {
 	}
 }
 
+void ASnakeHead::SwitchCameraPersonView() {
+	if (personMode == TPS) {
+		personMode = FPS;
+	}
+	else {
+		personMode = TPS;
+	}
+	SetCameraPersonView(personMode);
+}
+
+void ASnakeHead::SetCameraPersonView(CameraPersonModes mode) {
+	if (mode == TPS) {
+		SpringArm->SetRelativeRotation(FRotator(-20.f, 0.f, 0.f));
+		SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 40.f));
+		SpringArm->TargetArmLength = 200.0f;
+		SpringArm->bEnableCameraLag = true;
+		SpringArm->CameraLagSpeed = 3.0f;
+	}
+	else {
+		SpringArm->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
+		SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+		SpringArm->TargetArmLength = 0;
+		SpringArm->bEnableCameraLag = false;
+	}
+}
+
+
+
 /*Spawner*/
 void ASnakeHead::SpawnPiece(FVector Location, FRotator Rotation)
 {
 	FActorSpawnParameters SpawnParams;
 	ASnakePiece* SpawnedActorRef = GetWorld()->SpawnActor<ASnakePiece>(Piece, Location, Rotation, SpawnParams);
-	//corps.push_front(*SpawnedActorRef);
 	corps.Add(SpawnedActorRef);
 	if (LastPiece) {
 		LastPiece->isLast = false;
 	}
-	LastPiece = SpawnedActorRef;
-	UE_LOG(LogTemp, Warning, TEXT("score : %d"),corps.Num());	
+	LastPiece = SpawnedActorRef;	
 }
 
-void ASnakeHead::SpawnMovementTag(float Pitch, float Yaw, float Roll) {
+void ASnakeHead::SpawnMovementTag() {
 	FActorSpawnParameters SpawnParams;
 	int mult = radius;
 	FVector actualPos = GetActorLocation();
 	FVector vec = GetActorForwardVector();
 	//FVector newPos = FVector(actualPos.X + mult * vec.X, actualPos.Y + mult * vec.Y, actualPos.Z + mult * vec.Z);
 	FVector newPos = FVector(actualPos.X , actualPos.Y , actualPos.Z );
-	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, newPos, GetActorRotation(), SpawnParams);
-	SpawnedTagRef->PitchValue = Pitch;
-	SpawnedTagRef->YawValue = Yaw;
-	SpawnedTagRef->RollValue = Roll;
+	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, newPos, GetActorRotation(), SpawnParams); 
 }
+
+//Others
 
 void ASnakeHead::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 {
@@ -280,21 +278,30 @@ void ASnakeHead::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 	}
 }
 
-void ASnakeHead::Kill() {
-	
-	for (ASnakePiece* piece : corps) {
-		 piece->Destroy();
-	}
-	Destroy();
-}
-
 void ASnakeHead::HitFood(AFood* food) {
 	ButtonPush();
 	food->Destroy();
 	if (Field) {
 		Field->SpawnNextFood();
 	}
+	//Update HUD
+	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	if (PlayerHUD) {
+		Score += 1;
+		PlayerHUD->UpdateScore(Score);
+	}
 }
+
+void ASnakeHead::Kill() {
+	
+	for (ASnakePiece* piece : corps) {
+		 piece->Destroy();
+	}
+	//Destroy();
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
+}
+
+
 
 
 

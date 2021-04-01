@@ -8,17 +8,12 @@
 // Sets default values
 AFood::AFood()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-	Radius = 10;
-
+	Radius = 20;
 	// Our root component will be a sphere that reacts to physics
 	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
 	RootComponent = SphereComponent;
 	SphereComponent->InitSphereRadius(Radius);
 	SphereComponent->SetCollisionProfileName(TEXT("ActorSpere"));
-
 	// Create and position a mesh component so we can see where our sphere is
 	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	SphereVisual->SetupAttachment(RootComponent);
@@ -30,13 +25,10 @@ AFood::AFood()
 		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -Radius));
 		SphereVisual->SetWorldScale3D(FVector(Radius / 50));
 		SphereVisual->SetCollisionProfileName(TEXT("OverlapAll"));
-
-		SphereVisual->GetStaticMesh()->SetMaterial(0, plane_material.Object);
+		SphereVisual->SetMaterial(0, plane_material.Object);
 	}
-
 	OurMovementComponent = CreateDefaultSubobject<UMyPawnMovementComponent>(TEXT("CustomMovementComponent"));
 	OurMovementComponent->UpdatedComponent = RootComponent;
-
 	Tags.Add(FName("Food"));
 }
 
@@ -44,13 +36,6 @@ AFood::AFood()
 void AFood::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-// Called every frame
-void AFood::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 

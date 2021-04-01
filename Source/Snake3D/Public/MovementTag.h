@@ -23,6 +23,5 @@ public:
 
 	UFUNCTION()
 		void OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor);
-	
-	float PitchValue, YawValue, RollValue;
+
 };

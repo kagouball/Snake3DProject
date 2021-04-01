@@ -4,6 +4,7 @@
 #include "SnakePiece.h"
 #include "Components/SphereComponent.h"
 #include "MyPawnMovementComponent.h"
+#include "DrawDebugHelpers.h"
 #include "SnakeHead.h"
  
 
@@ -12,16 +13,13 @@ ASnakePiece::ASnakePiece()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	isLast = true;
 	Radius = 20;
-
 	// Our root component will be a sphere that reacts to physics
 	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
 	RootComponent = SphereComponent;
 	SphereComponent->InitSphereRadius(Radius);
 	SphereComponent->SetCollisionProfileName(TEXT("ActorSpere"));
-
 	// Create and position a mesh component so we can see where our sphere is
 	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	SphereVisual->SetupAttachment(RootComponent);
@@ -33,29 +31,9 @@ ASnakePiece::ASnakePiece()
 		SphereVisual->SetWorldScale3D(FVector(Radius / 50));
 		SphereVisual->SetCollisionProfileName(TEXT("OverlapAll"));
 	}
-	/*
-	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	VisualMesh->SetupAttachment(RootComponent);
-	VisualMesh->SetCollisionProfileName(TEXT("OverlapAll")); //for the camera not to be stack in the object when it pass in front of
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
-
-	if (CubeVisualAsset.Succeeded())
-	{
-		VisualMesh->SetStaticMesh(CubeVisualAsset.Object);
-		VisualMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.f));
-		VisualMesh->SetWorldScale3D(FVector(0.7f));
-	}
-	*/
-
 	// Create an instance of our movement component, and tell it to update the root.
 	OurMovementComponent = CreateDefaultSubobject<UMyPawnMovementComponent>(TEXT("CustomMovementComponent"));
 	OurMovementComponent->UpdatedComponent = RootComponent;
-
-	PitchValue = 0.f;
-	YawValue = 0.f;
-	RollValue = 0.f;
-
 	Tags.Add(FName("Snake.Piece"));
 }
 
@@ -69,50 +47,118 @@ void ASnakePiece::BeginPlay()
 void ASnakePiece::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	MoveForward(2);
-	CheckRotation();
+	//MoveForward(SPEED);
+	//CheckRotation();
+	SpecialMove();
 }
 
 void ASnakePiece::MoveForward(float AxisValue)
 {
+	float FrameRate = 1 / GetWorld()->GetDeltaSeconds();
 	FVector loc = GetActorLocation();
-	loc += GetActorForwardVector() * AxisValue;
+	loc += GetActorForwardVector() * (AxisValue * 100) / FrameRate;
 	SetActorLocation(loc);
-	/*
-	OurMovementComponent->AddInputVector(GetActorForwardVector() * AxisValue);
-	UE_LOG(LogTemp, Warning, TEXT("ForwardVec Piece: %s"), *GetActorForwardVector().ToString());
-	*/
 }
 
-void ASnakePiece::UpdateRotation(float PitchValueG, float YawValueG, float RollValueG) {
-	YawValue = YawValueG;
-	RollValue = RollValueG;
-	PitchValue = PitchValueG;
-	FQuat QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue));
-	//AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None); //Manière 1 d'update la rotation d'une piece
+void ASnakePiece::UpdateRotation(FRotator rotation) {
+	FQuat QuatRotation = FQuat(rotation);
 	SetActorRotation(QuatRotation, ETeleportType::None);
 }
 
 void ASnakePiece::AddMovementTag(AMovementTag* tag)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("Add"));
 	movementQueue.Add(tag);
 }
 
 void ASnakePiece::CheckRotation() {
 	if (movementQueue.Num() > 0) {
-		//UE_LOG(LogTemp, Warning, TEXT("CheckRotation > 0"));
 		AMovementTag* tag = movementQueue[0];
-		if (FVector::Distance(GetActorLocation(), tag->GetActorLocation()) < 1.f) {
-			//UE_LOG(LogTemp, Warning, TEXT("SAME LOCATION"));
-			UpdateRotation(tag->PitchValue, tag->YawValue, tag->RollValue);
+		/*
+		FVector *dir = new FVector(tag->GetActorLocation().X - GetActorLocation().X, 
+									tag->GetActorLocation().Y - GetActorLocation().Y, 
+									tag->GetActorLocation().Z - GetActorLocation().Z);
+		float dist = dir->Size();
+
+		FVector vec = GetActorForwardVector();
+		FVector actualPos = GetActorLocation();
+		int mult = 50;
+		FVector newPos = FVector(actualPos.X + mult * vec.X, actualPos.Y + mult * vec.Y, actualPos.Z + mult * vec.Z);
+		FVector newPos2 = FVector(actualPos.X + 100 * dir->X, actualPos.Y + 100 * dir->Y, actualPos.Z + 100 * dir->Z);
+		//DrawDebugLine(GetWorld(),actualPos, newPos2,FColor::Blue,false);
+
+		float angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(newPos, newPos2)));
+		UE_LOG(LogTemp, Warning, TEXT("time : %f"), GetWorld()->GetTimeSeconds());*/
+
+		float FrameRate = 1 / GetWorld()->GetDeltaSeconds();
+		float sizeVec = (GetActorForwardVector() * (SPEED * 100) / FrameRate).Size();
+		int count = 0;
+		for (int i = 0; i < movementQueue.Num();i++) {
+			if (FVector::Distance(GetActorLocation(), movementQueue[i]->GetActorLocation()) < sizeVec)
+				tag = movementQueue[i];
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("count : %d "), count);
+		if (FVector::Distance(GetActorLocation(), tag->GetActorLocation()) < sizeVec) {
 			SetActorLocation(tag->GetActorLocation());
-			//UE_LOG(LogTemp, Warning, TEXT("num : %d"), movementQueue.Num());
+			UpdateRotation(tag->GetActorRotation());
 			movementQueue.RemoveAt(0);
-			//UE_LOG(LogTemp, Warning, TEXT("num After pop : %d"), movementQueue.Num());
 			if (isLast) {
 				tag->Destroy();
 			}
 		}
+	}
+}
+
+void ASnakePiece::SpecialMove() {
+	if (movementQueue.Num() > 0) {
+		//bool present = true;
+		float FrameRate = 1 / GetWorld()->GetDeltaSeconds();
+		//vecteur de mouvement
+		FVector moveVector = (GetActorForwardVector() * (SPEED * 100) / FrameRate);
+		FVector newPos = GetActorLocation();
+		bool present = true;
+		//UE_LOG(LogTemp, Warning, TEXT("#########################"));
+		while (present && movementQueue.Num() > 0) {
+			//Tag le plus proche
+			//UE_LOG(LogTemp, Warning, TEXT("num : %d"), movementQueue.Num());
+			AMovementTag* tag = movementQueue[0];
+			//Distance entre la pos du piece et le tag
+			float distanceLocTag = FVector::Distance(newPos, tag->GetActorLocation());
+			FVector *tagVec = new FVector(tag->GetActorLocation().X - newPos.X,
+				tag->GetActorLocation().Y - newPos.Y,
+				tag->GetActorLocation().Z - newPos.Z);
+			//float angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(*tagVec, GetActorForwardVector())));
+			float value = (FVector::DotProduct(tagVec->GetSafeNormal(), GetActorForwardVector().GetSafeNormal()));
+			//UE_LOG(LogTemp, Warning, TEXT("value : %f"), value);
+			//UE_LOG(LogTemp, Warning, TEXT("distance : %f"),distanceLocTag);
+			if (value > 0) {
+				if (distanceLocTag < moveVector.Size()) {
+					//UE_LOG(LogTemp, Warning, TEXT("dans le if"));
+					//Si le tag dans le vect mouv
+					//Distance qu'il reste a parcourir apres le premier deplacement
+					float leftDistance = moveVector.Size() - distanceLocTag;
+					UpdateRotation(tag->GetActorRotation());	//Rotation
+					newPos = tag->GetActorLocation();
+					moveVector = (GetActorForwardVector().GetSafeNormal() * leftDistance);
+					movementQueue.RemoveAt(0);
+					if (isLast) {
+						tag->Destroy();
+					}
+				}
+				else {
+					present = false;
+				}
+			}
+			else {
+				movementQueue.RemoveAt(0);
+				if (isLast) {
+					tag->Destroy();
+				}
+			}
+			
+		}
+		SetActorLocation(newPos + moveVector);
+	}
+	else {
+		MoveForward(SPEED);
 	}
 }
