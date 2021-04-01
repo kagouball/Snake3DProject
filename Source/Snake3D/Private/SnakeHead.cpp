@@ -122,9 +122,19 @@ UPawnMovementComponent* ASnakeHead::GetMovementComponent() const
 
 void ASnakeHead::MoveForward(float AxisValue)
 {
-	float FrameRate = 1 / GetWorld()->GetDeltaSeconds();
+	float deltaSec = GetWorld()->GetDeltaSeconds();
+	if (deltaSec == 0.f) 
+	{
+		return; //early return
+	}
+	float FrameRate = 1.f / deltaSec;
+	if (FrameRate == 0.f)
+	{
+		return; //early return
+	}
+
 	FVector loc = GetActorLocation();
-	loc += GetActorForwardVector() * (AxisValue*100)/FrameRate;
+	loc += GetActorForwardVector() * ((AxisValue * 100.f) / FrameRate);
 	SetActorLocation(loc);
 }
 
@@ -170,7 +180,7 @@ void ASnakeHead::AngleLeft()
 }
 
 void ASnakeHead::UpdateRotation() {
-	if (YawValue != 0 || PitchValue != 0 || RollValue != 0) {
+	if (YawValue != 0.f || PitchValue != 0.f || RollValue != 0.f) {
 		//Update rotation
 		FQuat QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue));
 		AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
@@ -253,10 +263,8 @@ void ASnakeHead::SpawnPiece(FVector Location, FRotator Rotation)
 
 void ASnakeHead::SpawnMovementTag() {
 	FActorSpawnParameters SpawnParams;
-	int mult = radius;
 	FVector actualPos = GetActorLocation();
 	FVector vec = GetActorForwardVector();
-	//FVector newPos = FVector(actualPos.X + mult * vec.X, actualPos.Y + mult * vec.Y, actualPos.Z + mult * vec.Z);
 	FVector newPos = FVector(actualPos.X , actualPos.Y , actualPos.Z );
 	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, newPos, GetActorRotation(), SpawnParams); 
 }

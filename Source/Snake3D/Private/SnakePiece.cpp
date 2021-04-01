@@ -109,56 +109,48 @@ void ASnakePiece::CheckRotation() {
 }
 
 void ASnakePiece::SpecialMove() {
-	if (movementQueue.Num() > 0) {
-		//bool present = true;
-		float FrameRate = 1 / GetWorld()->GetDeltaSeconds();
-		//vecteur de mouvement
-		FVector moveVector = (GetActorForwardVector() * (SPEED * 100) / FrameRate);
-		FVector newPos = GetActorLocation();
-		bool present = true;
-		//UE_LOG(LogTemp, Warning, TEXT("#########################"));
-		while (present && movementQueue.Num() > 0) {
-			//Tag le plus proche
-			//UE_LOG(LogTemp, Warning, TEXT("num : %d"), movementQueue.Num());
-			AMovementTag* tag = movementQueue[0];
-			//Distance entre la pos du piece et le tag
-			float distanceLocTag = FVector::Distance(newPos, tag->GetActorLocation());
-			FVector *tagVec = new FVector(tag->GetActorLocation().X - newPos.X,
-				tag->GetActorLocation().Y - newPos.Y,
-				tag->GetActorLocation().Z - newPos.Z);
-			//float angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(*tagVec, GetActorForwardVector())));
-			float value = (FVector::DotProduct(tagVec->GetSafeNormal(), GetActorForwardVector().GetSafeNormal()));
-			//UE_LOG(LogTemp, Warning, TEXT("value : %f"), value);
-			//UE_LOG(LogTemp, Warning, TEXT("distance : %f"),distanceLocTag);
-			if (value > 0) {
-				if (distanceLocTag < moveVector.Size()) {
-					//UE_LOG(LogTemp, Warning, TEXT("dans le if"));
-					//Si le tag dans le vect mouv
-					//Distance qu'il reste a parcourir apres le premier deplacement
-					float leftDistance = moveVector.Size() - distanceLocTag;
-					UpdateRotation(tag->GetActorRotation());	//Rotation
-					newPos = tag->GetActorLocation();
-					moveVector = (GetActorForwardVector().GetSafeNormal() * leftDistance);
-					movementQueue.RemoveAt(0);
-					if (isLast) {
-						tag->Destroy();
-					}
-				}
-				else {
-					present = false;
-				}
-			}
-			else {
+	if (movementQueue.Num() == 0) {
+		MoveForward(SPEED);
+		return;
+	}
+
+	float FrameRate = 1 / GetWorld()->GetDeltaSeconds();
+	//vecteur de mouvement
+	FVector moveVector = (GetActorForwardVector() * (SPEED * 100) / FrameRate);
+	FVector newPos = GetActorLocation();
+	while (movementQueue.Num() > 0) {
+		//Tag le plus proche
+		AMovementTag* tag = movementQueue[0];
+		//Distance entre la pos du piece et le tag
+		//float distanceLocTag = FVector::Distance(newPos, tag->GetActorLocation());
+		float distanceLocTagSquared = FVector::DistSquared(newPos, tag->GetActorLocation()); // economie de sqrt
+		FVector* tagDir = new FVector(tag->GetActorLocation().X - newPos.X,
+			tag->GetActorLocation().Y - newPos.Y,
+			tag->GetActorLocation().Z - newPos.Z);
+		float dotProduct = (FVector::DotProduct(tagDir->GetSafeNormal(), GetActorForwardVector().GetSafeNormal())); // -1<=value<=1 to know if vector direction are opposite
+		if (dotProduct > 0.f) {
+			if (distanceLocTagSquared < moveVector.SizeSquared()) {
+				//Si le tag dans le vect mouv
+				//Distance qu'il reste a parcourir apres le premier deplacement
+				float remainingDistance = moveVector.Size() - FMath::Sqrt(distanceLocTagSquared);
+				UpdateRotation(tag->GetActorRotation());	//Rotation
+				newPos = tag->GetActorLocation();
+				moveVector = (GetActorForwardVector().GetSafeNormal() * remainingDistance);
 				movementQueue.RemoveAt(0);
 				if (isLast) {
 					tag->Destroy();
 				}
 			}
-			
+			else {
+				break;
+			}
 		}
-		SetActorLocation(newPos + moveVector);
+		else {
+			movementQueue.RemoveAt(0);
+			if (isLast) {
+				tag->Destroy();
+			}
+		}
 	}
-	else {
-		MoveForward(SPEED);
-	}
+	SetActorLocation(newPos + moveVector);
 }
