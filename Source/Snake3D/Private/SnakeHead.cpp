@@ -89,7 +89,7 @@ void ASnakeHead::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAxis("MoveTop", this, &ASnakeHead::MoveTop);
 	PlayerInputComponent->BindAxis("Rotate", this, &ASnakeHead::Rotate);
 	//Button
-	PlayerInputComponent->BindAction("SpawnObject", IE_Pressed, this, &ASnakeHead::ButtonPush);
+	PlayerInputComponent->BindAction("SpawnObject", IE_Pressed, this, &ASnakeHead::AddPiece);
 	PlayerInputComponent->BindAction("SwitchPersonView", IE_Pressed, this, &ASnakeHead::SwitchCameraPersonView);
 	//Angle
 	PlayerInputComponent->BindAction("AngleRight", IE_Pressed, this, &ASnakeHead::AngleRight);
@@ -98,9 +98,10 @@ void ASnakeHead::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction("AngleBottom", IE_Pressed, this, &ASnakeHead::AngleBottom);
 }
 
-void ASnakeHead::ButtonPush()
+void ASnakeHead::AddPiece()
 {
-	int mult = 2*radius+1;
+	float mult = 2.f*radius+1.f;
+
 	FVector actualPos = GetActorLocation();
 	FVector vec = GetActorForwardVector();
 	FRotator rotation = GetActorRotation();
@@ -287,7 +288,7 @@ void ASnakeHead::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 }
 
 void ASnakeHead::HitFood(AFood* food) {
-	ButtonPush();
+	AddPiece();
 	food->Destroy();
 	if (Field) {
 		Field->SpawnNextFood();

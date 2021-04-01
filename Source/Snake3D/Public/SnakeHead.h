@@ -11,7 +11,7 @@
 #include "Snake3D/Public/Food.h"
 #include "SnakeHead.generated.h"
 
-#define SPEED 2
+#define SPEED 2.f
 
 UCLASS()
 class SNAKE3D_API ASnakeHead : public APawn
@@ -84,7 +84,7 @@ public:
 	void TurnUpCamera(float AxisValue);
 	void UpdateCamera();
 	//Other
-	void ButtonPush();
+	void AddPiece();
 	void SwitchCameraPersonView();
 	void SetCameraPersonView(CameraPersonModes mode);
 	void UpdateRotation();

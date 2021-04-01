@@ -8,7 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "SnakePiece.generated.h"
 
-#define SPEED 2
+#define SPEED 2.f
 
 UCLASS()
 class SNAKE3D_API ASnakePiece : public AActor
@@ -43,6 +43,7 @@ private:
 	TArray<AMovementTag*> movementQueue;
 	void MoveForward(float AxisValue);
 	void UpdateRotation(FRotator rotation);
-	void CheckRotation();
 	void SpecialMove();
+	void DestroyFirstMovementTag();
+	FVector GetVelocityVector();
 };
