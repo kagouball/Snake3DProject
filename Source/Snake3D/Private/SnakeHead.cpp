@@ -100,17 +100,23 @@ void ASnakeHead::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 void ASnakeHead::AddPiece()
 {
-	float mult = 2.f*radius+1.f;
-
-	FVector actualPos = GetActorLocation();
-	FVector vec = GetActorForwardVector();
-	FRotator rotation = GetActorRotation();
-	if (LastPiece) {
+	float distance = 2.f*radius+1.f;
+	FVector actualPos;
+	FVector vec;
+	FRotator rotation;
+	if (LastPiece) 
+	{
 		actualPos = LastPiece->GetActorLocation();
 		vec = LastPiece->GetActorForwardVector();
 		rotation = LastPiece->GetActorRotation();
 	}
-	FVector newPos = FVector(actualPos.X - mult*vec.X,actualPos.Y - mult*vec.Y,actualPos.Z - mult*vec.Z);
+	else 
+	{
+		actualPos = GetActorLocation();
+		vec = GetActorForwardVector();
+		rotation = GetActorRotation();
+	}
+	FVector newPos = actualPos - (vec*distance);
 	SpawnPiece(newPos, rotation);
 }
 
@@ -141,65 +147,78 @@ void ASnakeHead::MoveForward(float AxisValue)
 
 void ASnakeHead::Turn(float AxisValue)
 {
-	if (AxisValue != 0) {
+	if (AxisValue != 0.f) {
 		YawValue += AxisValue;
 	}
 }
 
 void ASnakeHead::MoveTop(float AxisValue)
 {
-	if (AxisValue != 0) {//permet de ne pas update à tous les tick
+	if (AxisValue != 0.f) {//permet de ne pas update à tous les tick
 		PitchValue += AxisValue;
 	}
 }
 
 void ASnakeHead::Rotate(float AxisValue)
 {
-	if (AxisValue != 0) {
+	if (AxisValue != 0.f) {
 		RollValue += AxisValue;
 	}
 }
 
 void ASnakeHead::AngleTop()
 {
-	MoveTop(90);
+	MoveTop(90.f);
 }
 
 void ASnakeHead::AngleBottom()
 {
-	MoveTop(-90);
+	MoveTop(-90.f);
 }
 
 void ASnakeHead::AngleRight()
 {
-	Turn(90);
+	Turn(90.f);
 }
 
 void ASnakeHead::AngleLeft()
 {
-	Turn(-90);
+	Turn(-90.f);
 }
 
 void ASnakeHead::UpdateRotation() {
-	if (YawValue != 0.f || PitchValue != 0.f || RollValue != 0.f) {
+	if (YawValue != 0.f || PitchValue != 0.f || RollValue != 0.f) 
+	{
+		float deltaSec = GetWorld()->GetDeltaSeconds();
+		if (deltaSec == 0.f)
+		{
+			return; //early return
+		}
+		float FrameRate = 1.f / deltaSec;
+		if (FrameRate == 0.f)
+		{
+			return; //early return
+		}
 		//Update rotation
 		FQuat QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue));
-		AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
+		AddActorLocalRotation(QuatRotation * (100.f / FrameRate), false, 0, ETeleportType::None);
 		//Spawn tag
-		if (LastPiece) {
+		if (LastPiece) 
+		{
 			SpawnMovementTag();
 		}
-		YawValue = 0;
-		RollValue = 0;
-		PitchValue = 0;
+		YawValue = 0.f;
+		RollValue = 0.f;
+		PitchValue = 0.f;
 	}
 }
 
 //Camera movement
 void ASnakeHead::TurnRightCamera(float AxisValue) {
-	if (AxisValue != 0) {
+	if (AxisValue != 0.f) {
 		float camYaw = SpringArm->GetRelativeRotation().Yaw;
-		if (FMath::Abs(camYaw + AxisValue) < 50) {
+		if (FMath::Abs(camYaw + AxisValue) < 90.f) //90: angle max
+		{ 
 			SpringArm->SetRelativeRotation(FRotator(SpringArm->GetRelativeRotation().Pitch, camYaw + AxisValue, 0.f));
 		}
 	}
@@ -217,7 +236,7 @@ void ASnakeHead::UpdateCamera() {
 	float camYaw = SpringArm->GetRelativeRotation().Yaw;
 	if (camYaw != 0.f) {
 		float sign = UKismetMathLibrary::SignOfFloat(camYaw);
-		float newRot = FMath::Clamp(FMath::Abs(camYaw) -1, 0.f,90.f);
+		float newRot = FMath::Clamp(FMath::Abs(camYaw) -1.f, 0.f,90.f);
 		SpringArm->SetRelativeRotation(FRotator(SpringArm->GetRelativeRotation().Pitch, newRot*sign, SpringArm->GetRelativeRotation().Roll));
 	}
 }
@@ -233,14 +252,16 @@ void ASnakeHead::SwitchCameraPersonView() {
 }
 
 void ASnakeHead::SetCameraPersonView(CameraPersonModes mode) {
-	if (mode == TPS) {
+	if (mode == TPS) 
+	{
 		SpringArm->SetRelativeRotation(FRotator(-20.f, 0.f, 0.f));
 		SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 40.f));
 		SpringArm->TargetArmLength = 200.0f;
 		SpringArm->bEnableCameraLag = true;
 		SpringArm->CameraLagSpeed = 3.0f;
 	}
-	else {
+	else 
+	{
 		SpringArm->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
 		SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 		SpringArm->TargetArmLength = 0;
@@ -255,39 +276,46 @@ void ASnakeHead::SpawnPiece(FVector Location, FRotator Rotation)
 {
 	FActorSpawnParameters SpawnParams;
 	ASnakePiece* SpawnedActorRef = GetWorld()->SpawnActor<ASnakePiece>(Piece, Location, Rotation, SpawnParams);
+	if (SpawnedActorRef == NULL) 
+	{
+		return;
+	}
+
 	corps.Add(SpawnedActorRef);
-	if (LastPiece) {
+	if (LastPiece) 
+	{
 		LastPiece->isLast = false;
 	}
 	LastPiece = SpawnedActorRef;	
 }
 
-void ASnakeHead::SpawnMovementTag() {
+void ASnakeHead::SpawnMovementTag() 
+{
 	FActorSpawnParameters SpawnParams;
-	FVector actualPos = GetActorLocation();
-	FVector vec = GetActorForwardVector();
-	FVector newPos = FVector(actualPos.X , actualPos.Y , actualPos.Z );
-	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, newPos, GetActorRotation(), SpawnParams); 
+	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, GetActorLocation(), GetActorRotation(), SpawnParams);
 }
 
 //Others
 
 void ASnakeHead::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 {
-	if (OtherActor->ActorHasTag(FName("Snake.Piece"))) {
+	if (OtherActor->ActorHasTag(FName("Snake.Piece"))) 
+	{
 		ASnakePiece* piece = dynamic_cast<ASnakePiece*>(OtherActor);
 		if (piece && corps.IndexOfByKey(piece) != 0) //check if its not the first element of the tail (issue with collision)
 		{
 			Kill();
 		}
 	}
-	else if (OtherActor->ActorHasTag(FName("Food"))) {
+	else if (OtherActor->ActorHasTag(FName("Food"))) 
+	{
 		AFood* food = dynamic_cast<AFood*>(OtherActor);
 		HitFood(food);
 	}
 }
 
-void ASnakeHead::HitFood(AFood* food) {
+void ASnakeHead::HitFood(AFood* food) 
+{
 	AddPiece();
 	food->Destroy();
 	if (Field) {
@@ -295,7 +323,8 @@ void ASnakeHead::HitFood(AFood* food) {
 	}
 	//Update HUD
 	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-	if (PlayerHUD) {
+	if (PlayerHUD) 
+	{
 		Score += 1;
 		PlayerHUD->UpdateScore(Score);
 	}
