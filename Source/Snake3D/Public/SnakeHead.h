@@ -9,6 +9,7 @@
 #include "SnakePiece.h"
 #include "MovementTag.h"
 #include "Snake3D/Public/Food.h"
+#include "Angle.h"
 #include "SnakeHead.generated.h"
 
 #define SPEED 2.f
@@ -50,9 +51,12 @@ private:
 	float PitchValue, YawValue, RollValue;	//Rotation 
 	float radius;
 	bool isCameraMoving;
+	bool makeAngle;
+	FQuat angle;
 	TArray<ASnakePiece*> corps;		//Snake piece list
 	enum CameraPersonModes{FPS,TPS};
 	CameraPersonModes personMode;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

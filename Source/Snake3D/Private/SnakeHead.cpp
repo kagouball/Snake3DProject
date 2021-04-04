@@ -26,6 +26,7 @@ ASnakeHead::ASnakeHead()
 	radius = 20;
 	Score = 0;
 	isCameraMoving = false;
+	makeAngle = false;
 	personMode = TPS;
 	if (!Field) {
 		Field = NULL;
@@ -168,27 +169,37 @@ void ASnakeHead::Rotate(float AxisValue)
 
 void ASnakeHead::AngleTop()
 {
-	MoveTop(90.f);
+	makeAngle = true;
+	angle = Angle::GetRightAngleTop();
 }
 
 void ASnakeHead::AngleBottom()
 {
-	MoveTop(-90.f);
+	makeAngle = true;
+	angle = Angle::GetRightAngleBottom();
 }
 
 void ASnakeHead::AngleRight()
 {
-	Turn(90.f);
+	makeAngle = true;
+	angle = Angle::GetRightAngleRight();
 }
 
 void ASnakeHead::AngleLeft()
 {
-	Turn(-90.f);
+	makeAngle = true;
+	angle = Angle::GetRightAngleLeft();
 }
 
 void ASnakeHead::UpdateRotation() {
-	if (YawValue != 0.f || PitchValue != 0.f || RollValue != 0.f) 
+	if (YawValue == 0.f && PitchValue == 0.f && RollValue == 0.f && !makeAngle) {
+		return;	//early return
+	}
+
+	FQuat QuatRotation;
+	if (!makeAngle)
 	{
+		//rotation en fonction de framerate
 		float deltaSec = GetWorld()->GetDeltaSeconds();
 		if (deltaSec == 0.f)
 		{
@@ -199,18 +210,25 @@ void ASnakeHead::UpdateRotation() {
 		{
 			return; //early return
 		}
-		//Update rotation
-		FQuat QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue));
-		AddActorLocalRotation(QuatRotation * (100.f / FrameRate), false, 0, ETeleportType::None);
-		//Spawn tag
-		if (LastPiece) 
-		{
-			SpawnMovementTag();
-		}
-		YawValue = 0.f;
-		RollValue = 0.f;
-		PitchValue = 0.f;
+
+		QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue) * (100.f / FrameRate));
 	}
+	else
+	{
+		//rotation 90 cst
+		QuatRotation = angle;
+		makeAngle = false;
+	}
+
+	AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
+	//Spawn tag
+	if (LastPiece)
+	{
+		SpawnMovementTag();
+	}
+	YawValue = 0.f;
+	RollValue = 0.f;
+	PitchValue = 0.f;
 }
 
 //Camera movement
