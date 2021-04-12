@@ -10,6 +10,7 @@
 #include "MovementTag.h"
 #include "Snake3D/Public/Food.h"
 #include "Angle.h"
+#include "Tools.h"
 #include "SnakeHead.generated.h"
 
 #define SPEED 2.f

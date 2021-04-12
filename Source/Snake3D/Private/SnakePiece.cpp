@@ -84,7 +84,7 @@ void ASnakePiece::SpecialMove() {
 		float dotProduct = (FVector::DotProduct(tagDir->GetSafeNormal(), GetActorForwardVector().GetSafeNormal())); // -1<=value<=1 to know if vector direction are opposite
 		if (dotProduct > 0.f) 
 		{
-			if (distanceLocTagSquared < moveVector.SizeSquared()) 
+			if (distanceLocTagSquared <= moveVector.SizeSquared()) 
 			{
 				//Si le tag dans le vect mouv
 				//Distance qu'il reste a parcourir apres le premier deplacement

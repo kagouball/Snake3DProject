@@ -8,7 +8,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Runtime/Engine/Classes/GameFramework/InputSettings.h"
-
 #include "MyPawnMovementComponent.h"
 #include "MovementTag.h"
 #include "PlayField.h"
@@ -130,17 +129,7 @@ UPawnMovementComponent* ASnakeHead::GetMovementComponent() const
 
 void ASnakeHead::MoveForward(float AxisValue)
 {
-	float deltaSec = GetWorld()->GetDeltaSeconds();
-	if (deltaSec == 0.f) 
-	{
-		return; //early return
-	}
-	float FrameRate = 1.f / deltaSec;
-	if (FrameRate == 0.f)
-	{
-		return; //early return
-	}
-
+	float FrameRate = Tools::GetSafeFramerate(GetWorld()->GetDeltaSeconds());
 	FVector loc = GetActorLocation();
 	loc += GetActorForwardVector() * ((AxisValue * 100.f) / FrameRate);
 	SetActorLocation(loc);
@@ -199,18 +188,7 @@ void ASnakeHead::UpdateRotation() {
 	FQuat QuatRotation;
 	if (!makeAngle)
 	{
-		//rotation en fonction de framerate
-		float deltaSec = GetWorld()->GetDeltaSeconds();
-		if (deltaSec == 0.f)
-		{
-			return; //early return
-		}
-		float FrameRate = 1.f / deltaSec;
-		if (FrameRate == 0.f)
-		{
-			return; //early return
-		}
-
+		float FrameRate = Tools::GetSafeFramerate(GetWorld()->GetDeltaSeconds());
 		QuatRotation = FQuat(FRotator(PitchValue, YawValue, RollValue) * (100.f / FrameRate));
 	}
 	else
@@ -237,7 +215,8 @@ void ASnakeHead::TurnRightCamera(float AxisValue) {
 		float camYaw = SpringArm->GetRelativeRotation().Yaw;
 		if (FMath::Abs(camYaw + AxisValue) < 90.f) //90: angle max
 		{ 
-			SpringArm->SetRelativeRotation(FRotator(SpringArm->GetRelativeRotation().Pitch, camYaw + AxisValue, 0.f));
+			float framerate = Tools::GetSafeFramerate(GetWorld()->GetDeltaSeconds());
+			SpringArm->SetRelativeRotation(FRotator(SpringArm->GetRelativeRotation().Pitch, camYaw + (AxisValue * 100.f/framerate), 0.f));
 		}
 	}
 	else {

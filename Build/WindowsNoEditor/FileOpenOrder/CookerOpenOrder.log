@@ -55,19 +55,19 @@
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Chair_M.uasset" 54
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/Materials/M_Chair.uasset" 55
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/SM_Couch.uasset" 56
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Materials/M_Glass.uasset" 57
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Door_N.uasset" 58
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Door_M.uasset" 59
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/Materials/M_Door.uasset" 60
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Door_N.uasset" 57
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Door_M.uasset" 58
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/Materials/M_Door.uasset" 59
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Materials/M_Glass.uasset" 60
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/SM_Door.uasset" 61
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/Materials/M_MaterialSphere_Plain.uasset" 62
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/Materials/M_MaterialSphere.uasset" 63
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/SM_MatPreviewMesh_02.uasset" 64
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Rock_Basalt_D.uasset" 65
-"../../../Engine/Content/Functions/Engine_MaterialFunctions02/Utility/BlendAngleCorrectedNormals.uasset" 66
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Detail_Rocky_N.uasset" 67
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_RockMesh_N.uasset" 68
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_RockMesh_M.uasset" 69
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_RockMesh_N.uasset" 65
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_RockMesh_M.uasset" 66
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Rock_Basalt_D.uasset" 67
+"../../../Engine/Content/Functions/Engine_MaterialFunctions02/Utility/BlendAngleCorrectedNormals.uasset" 68
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Detail_Rocky_N.uasset" 69
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/Materials/M_Rock.uasset" 70
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/SM_Rock.uasset" 71
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Props/SM_Shelf.uasset" 72
@@ -153,10 +153,10 @@
 "../../../Engine/Content/EngineFonts/Faces/RobotoBold.uasset" 152
 "../../../Engine/Content/EngineFonts/Faces/DroidSansFallback.uasset" 153
 "../../../Engine/Content/EngineFonts/Roboto.uasset" 154
-"../../../Engine/Content/EngineMaterials/BaseFlattenEmissiveMap.uasset" 155
-"../../../Engine/Content/EngineMaterials/BaseFlattenDiffuseMap.uasset" 156
-"../../../Engine/Content/EngineMaterials/BaseFlattenNormalMap.uasset" 157
-"../../../Engine/Content/EngineMaterials/BaseFlattenGrayscaleMap.uasset" 158
+"../../../Engine/Content/EngineMaterials/BaseFlattenNormalMap.uasset" 155
+"../../../Engine/Content/EngineMaterials/BaseFlattenGrayscaleMap.uasset" 156
+"../../../Engine/Content/EngineMaterials/BaseFlattenEmissiveMap.uasset" 157
+"../../../Engine/Content/EngineMaterials/BaseFlattenDiffuseMap.uasset" 158
 "../../../Engine/Content/EngineMaterials/BaseFlattenMaterial.uasset" 159
 "../../../Engine/Content/EngineMaterials/BlueNoise.uasset" 160
 "../../../Engine/Content/EngineMaterials/DefaultBloomKernel.uasset" 161
@@ -268,8 +268,8 @@
 "../../Plugins/Editor/SpeedTreeImporter/Content/SpeedTree9/SpeedTreeBillboardMaster.uasset" 267
 "../../Plugins/Editor/SpeedTreeImporter/Content/SpeedTree9/SpeedTreeCameraFacing.uasset" 268
 "../../Plugins/Editor/SpeedTreeImporter/Content/SpeedTree9/SpeedTreeMaster.uasset" 269
-"../../../Engine/Content/BasicShapes/Cylinder.uasset" 270
-"../../../Engine/Content/ArtTools/RenderToTexture/Materials/Debug/M_Emissive_Color.uasset" 271
+"../../../Engine/Content/ArtTools/RenderToTexture/Materials/Debug/M_Emissive_Color.uasset" 270
+"../../../Engine/Content/BasicShapes/Cylinder.uasset" 271
 "../../Plugins/Lumin/MagicLeapPassableWorld/Content/MagicLeapARPinInfoActor.uasset" 272
 "../../../Engine/Content/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat4Components.uasset" 273
 "../../../Engine/Content/Functions/Engine_MaterialFunctions02/Utility/MakeFloat3.uasset" 274
@@ -359,8 +359,8 @@
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Dust_Particle_D.uasset" 358
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Particles/Materials/M_Dust_Particle.uasset" 359
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Particles/P_Ambient_Dust.uasset" 360
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Wood_Walnut_D.uasset" 361
-"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Wood_Walnut_N.uasset" 362
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Wood_Walnut_N.uasset" 361
+"C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Wood_Walnut_D.uasset" 362
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Materials/M_Wood_Walnut.uasset" 363
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Wood_Pine_N.uasset" 364
 "C:/Users/COPPO Manuel/Documents/Unreal Projects/Snake3D/Content/StarterContent/Textures/T_Wood_Pine_D.uasset" 365
