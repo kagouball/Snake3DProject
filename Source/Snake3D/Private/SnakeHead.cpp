@@ -22,8 +22,9 @@ ASnakeHead::ASnakeHead()
 	PitchValue = 0.f;
 	YawValue = 0.f;
 	RollValue = 0.f;
-	radius = 20;
+	radius = 20.f;
 	Score = 0;
+	tagCount = 0;
 	isCameraMoving = false;
 	makeAngle = false;
 	personMode = TPS;
@@ -222,7 +223,6 @@ void ASnakeHead::TurnRightCamera(float AxisValue) {
 	else {
 		UpdateCamera();
 	}
-	
 }
 
 void ASnakeHead::TurnUpCamera(float AxisValue) {
@@ -290,6 +290,11 @@ void ASnakeHead::SpawnMovementTag()
 {
 	FActorSpawnParameters SpawnParams;
 	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, GetActorLocation(), GetActorRotation(), SpawnParams);
+	SpawnedTagRef->id = tagCount++;
+	if (lastTagSpawned) {
+		lastTagSpawned->SetDistanceToNext(FVector::Distance(GetActorLocation(), SpawnedTagRef->GetActorLocation()));
+		lastTagSpawned = SpawnedTagRef;
+	}
 }
 
 //Others

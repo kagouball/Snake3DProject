@@ -23,5 +23,10 @@ public:
 
 	UFUNCTION()
 		void OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor);
+	void SetDistanceToNext(float distance);
+	float GetDistanceToNext();
+	int id;
 
+private:
+	float distanceToNext;
 };

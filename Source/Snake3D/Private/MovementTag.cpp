@@ -17,6 +17,7 @@ AMovementTag::AMovementTag()
 	RootComponent = SphereComponent;
 	//listener
 	OnActorBeginOverlap.AddDynamic(this, &AMovementTag::OnOverlapBegin);
+	distanceToNext = -1;
 }
 
 void AMovementTag::BeginPlay() {
@@ -33,4 +34,13 @@ void AMovementTag::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 			piece->AddMovementTag(this);
 		}
 	}
+}
+
+void AMovementTag::SetDistanceToNext(float distance) {
+	distanceToNext = distance;
+}
+
+float AMovementTag::GetDistanceToNext()
+{
+	return distanceToNext;
 }

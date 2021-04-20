@@ -51,12 +51,16 @@ private:
 
 	float PitchValue, YawValue, RollValue;	//Rotation 
 	float radius;
+	float tagCount;
 	bool isCameraMoving;
 	bool makeAngle;
 	FQuat angle;
 	TArray<ASnakePiece*> corps;		//Snake piece list
 	enum CameraPersonModes{FPS,TPS};
 	CameraPersonModes personMode;
+
+	UPROPERTY()
+		AMovementTag* lastTagSpawned;
 	
 protected:
 	// Called when the game starts or when spawned
