@@ -292,7 +292,7 @@ void ASnakeHead::SpawnMovementTag()
 	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, GetActorLocation(), GetActorRotation(), SpawnParams);
 	SpawnedTagRef->id = tagCount++;
 	if (lastTagSpawned) {
-		lastTagSpawned->SetDistanceToNext(FVector::Distance(GetActorLocation(), SpawnedTagRef->GetActorLocation()));
+		lastTagSpawned->SetNext(SpawnedTagRef);
 		lastTagSpawned = SpawnedTagRef;
 	}
 }

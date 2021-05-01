@@ -25,8 +25,10 @@ public:
 		void OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor);
 	void SetDistanceToNext(float distance);
 	float GetDistanceToNext();
+	void SetNext(AMovementTag* nextTag);
 	int id;
 
 private:
 	float distanceToNext;
+	AMovementTag* next;
 };

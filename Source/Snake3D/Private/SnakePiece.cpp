@@ -15,6 +15,7 @@ ASnakePiece::ASnakePiece()
 	PrimaryActorTick.bCanEverTick = true;
 	isLast = true;
 	Radius = 20;
+	target = NULL;
 	// Our root component will be a sphere that reacts to physics
 	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
 	RootComponent = SphereComponent;
@@ -62,21 +63,14 @@ void ASnakePiece::UpdateRotation(FRotator rotation) {
 
 void ASnakePiece::AddMovementTag(AMovementTag* tag)
 {
-	/*
-	int length = movementQueue.Num();
-	if (length == 0) {
-		movementQueue.Add(tag);
-	}
-	else {
-		for (int i = length - 1; i > 0; --i) {
-			if (movementQueue[i]->id < tag->id) {
-				movementQueue.Insert(tag, i);
-			}
-		}
-	}*/
 	movementQueue.Add(tag);
 	movementQueue.Sort([](const AMovementTag& t1, const AMovementTag& t2) {return t1.id < t2.id; });
 	//Attention ici: Sort le tableau a chaque ajout de tag, est ce uen bonne idée niveau perf?
+}
+
+void ASnakePiece::SetTarget(AMovementTag* newTarget)
+{
+	target = newTarget;
 }
 
 void ASnakePiece::SpecialMove() {
@@ -94,19 +88,13 @@ void ASnakePiece::SpecialMove() {
 	while (movementQueue.Num() > 0) {
 		//Tag le plus proche du centre
 		AMovementTag* tag = movementQueue[0];
-		if (movementQueue.Num() > 1) {
-			AMovementTag* tagNext = movementQueue[1];
-			if (tag->id > tagNext->id) {
-				UE_LOG(LogTemp, Warning, TEXT("rip"));
-			}
-		}
 		//Distance entre la pos du piece et le tag
 		float distanceLocTagSquared = FVector::DistSquared(newPos, tag->GetActorLocation()); // economie de sqrt
 		FVector* tagDir = new FVector(tag->GetActorLocation().X - newPos.X,
 			tag->GetActorLocation().Y - newPos.Y,
 			tag->GetActorLocation().Z - newPos.Z);
 		float dotProduct = (FVector::DotProduct(tagDir->GetSafeNormal(), GetActorForwardVector().GetSafeNormal())); // -1<=value<=1 to know if vector direction are opposite
-		if (dotProduct >= 0.8f)
+		if (dotProduct >= 0.4f)
 		{
 			if (distanceLocTagSquared <= moveVector.SizeSquared()) 
 			{
@@ -125,7 +113,7 @@ void ASnakePiece::SpecialMove() {
 		}
 		else 
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("rot : %s \ndotP : %f"), *(GetActorRotation()-tag->GetActorRotation()).ToString(), dotProduct);
+			UE_LOG(LogTemp, Warning, TEXT("rot : %s \ndotP : %f"), *(GetActorRotation()-tag->GetActorRotation()).ToString(), dotProduct);
 			DestroyFirstMovementTag();
 		}
 	}
@@ -148,14 +136,6 @@ void ASnakePiece::DestroyFirstMovementTag() {
 
 FVector ASnakePiece::GetVelocityVector() 
 {
-	float deltaSeconds = GetWorld()->GetDeltaSeconds();
-	if (deltaSeconds == 0.f) {
-		return FVector::ZeroVector;
-	}
-	float frameRate = 1.f / deltaSeconds;
-	if (frameRate == 0.f) {
-		return FVector::ZeroVector;
-	}
-
+	float frameRate = Tools::GetSafeFramerate(GetWorld()->GetDeltaSeconds());
 	return GetActorForwardVector() * (SPEED * 100.f) / frameRate;
 }

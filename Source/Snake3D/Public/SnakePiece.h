@@ -30,6 +30,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void AddMovementTag(AMovementTag* tag);
+	void SetTarget(AMovementTag* newTarget);
 
 	UPROPERTY()
 		class UMyPawnMovementComponent* OurMovementComponent;
@@ -40,6 +41,7 @@ public:
 private:
 
 	float Radius;
+	AMovementTag* target;
 	TArray<AMovementTag*> movementQueue;
 	void MoveForward(float AxisValue);
 	void UpdateRotation(FRotator rotation);

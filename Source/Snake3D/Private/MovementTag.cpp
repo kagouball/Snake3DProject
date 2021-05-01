@@ -18,6 +18,7 @@ AMovementTag::AMovementTag()
 	//listener
 	OnActorBeginOverlap.AddDynamic(this, &AMovementTag::OnOverlapBegin);
 	distanceToNext = -1;
+	next = NULL;
 }
 
 void AMovementTag::BeginPlay() {
@@ -43,4 +44,9 @@ void AMovementTag::SetDistanceToNext(float distance) {
 float AMovementTag::GetDistanceToNext()
 {
 	return distanceToNext;
+}
+
+void AMovementTag::SetNext(AMovementTag* nextTag)
+{
+	next = nextTag;
 }
