@@ -18,7 +18,7 @@ AMovementTag::AMovementTag()
 	//listener
 	OnActorBeginOverlap.AddDynamic(this, &AMovementTag::OnOverlapBegin);
 	distanceToNext = -1;
-	next = NULL;
+	next = nullptr;
 }
 
 void AMovementTag::BeginPlay() {
@@ -32,7 +32,10 @@ void AMovementTag::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 	if (OtherActor && (OtherActor != this) && OtherActor->ActorHasTag(FName("Snake.Piece"))) {
 		ASnakePiece *piece = dynamic_cast<ASnakePiece*>(OtherActor);
 		if (piece) {
-			piece->AddMovementTag(this);
+			//Warning : plz manage this directly in the setter
+			if (piece->GetTarget() == nullptr) {
+				piece->SetTarget(this,true);
+			}
 		}
 	}
 }
@@ -49,4 +52,15 @@ float AMovementTag::GetDistanceToNext()
 void AMovementTag::SetNext(AMovementTag* nextTag)
 {
 	next = nextTag;
+}
+
+AMovementTag* AMovementTag::GetNext()
+{
+	return next;
+}
+
+void AMovementTag::Kill()
+{
+	next = nullptr;
+	Destroy();
 }

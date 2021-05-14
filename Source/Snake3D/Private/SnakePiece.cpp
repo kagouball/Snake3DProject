@@ -15,7 +15,10 @@ ASnakePiece::ASnakePiece()
 	PrimaryActorTick.bCanEverTick = true;
 	isLast = true;
 	Radius = 20;
-	target = NULL;
+	ActualPathLength = 0;
+	distance_segment = 0;
+	target = nullptr;
+	//startPos = GetActorLocation();
 	// Our root component will be a sphere that reacts to physics
 	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
 	RootComponent = SphereComponent;
@@ -61,78 +64,52 @@ void ASnakePiece::UpdateRotation(FRotator rotation) {
 	SetActorRotation(QuatRotation, ETeleportType::None);
 }
 
-void ASnakePiece::AddMovementTag(AMovementTag* tag)
+void ASnakePiece::SetTarget(AMovementTag* newTarget , bool isFromTrigger)
 {
-	movementQueue.Add(tag);
-	movementQueue.Sort([](const AMovementTag& t1, const AMovementTag& t2) {return t1.id < t2.id; });
-	//Attention ici: Sort le tableau a chaque ajout de tag, est ce uen bonne idée niveau perf?
-}
-
-void ASnakePiece::SetTarget(AMovementTag* newTarget)
-{
+	startPosition = isFromTrigger ? GetActorLocation() : target->GetActorLocation();
+	if (newTarget) {
+		ActualPathLength = FVector::Distance(startPosition, newTarget->GetActorLocation());
+		//ActualPathLength = isFromTrigger ? FVector::Distance(startPosition, newTarget->GetActorLocation()) : target->GetDistanceToNext();
+	}
 	target = newTarget;
 }
 
+AMovementTag* ASnakePiece::GetTarget()
+{
+	return target;
+}
+
 void ASnakePiece::SpecialMove() {
-	if (movementQueue.Num() == 0) {
+	if (target == nullptr) {
 		MoveForward(SPEED);
 		return;
 	}
-	//vecteur de mouvement
-	/*Calcul inutile ici!!
-	* On calcule la distance entre 2 tag pour tout les snakepiece de la chaine
-	* Autant enregistrer celle ci (qui est fixe) dans le tagMovement
-	*/
-	FVector moveVector = GetVelocityVector();
-	FVector newPos = GetActorLocation();
-	while (movementQueue.Num() > 0) {
-		//Tag le plus proche du centre
-		AMovementTag* tag = movementQueue[0];
-		//Distance entre la pos du piece et le tag
-		float distanceLocTagSquared = FVector::DistSquared(newPos, tag->GetActorLocation()); // economie de sqrt
-		FVector* tagDir = new FVector(tag->GetActorLocation().X - newPos.X,
-			tag->GetActorLocation().Y - newPos.Y,
-			tag->GetActorLocation().Z - newPos.Z);
-		float dotProduct = (FVector::DotProduct(tagDir->GetSafeNormal(), GetActorForwardVector().GetSafeNormal())); // -1<=value<=1 to know if vector direction are opposite
-		if (dotProduct >= 0.4f)
+
+	distance_segment += SPEED * GetWorld()->GetDeltaSeconds() * 100.f;
+	while (distance_segment >= ActualPathLength) {
+		distance_segment -= ActualPathLength;
+		AMovementTag* prevTarget = target;
+		UpdateRotation(target->GetActorRotation());
+		SetActorLocation(target->GetActorLocation());
+		SetTarget(target->GetNext(),false);
+		if (isLast)
 		{
-			if (distanceLocTagSquared <= moveVector.SizeSquared()) 
-			{
-				//Si le tag dans le vect mouv
-				//Distance qu'il reste a parcourir apres le premier deplacement
-				float remainingDistance = moveVector.Size() - FMath::Sqrt(distanceLocTagSquared);
-				UpdateRotation(tag->GetActorRotation());	//Rotation
-				newPos = tag->GetActorLocation();
-				moveVector = (GetActorForwardVector().GetSafeNormal() * remainingDistance);
-				DestroyFirstMovementTag();
-			}
-			else
-			{
-				break;
-			}
-		}
-		else 
-		{
-			UE_LOG(LogTemp, Warning, TEXT("rot : %s \ndotP : %f"), *(GetActorRotation()-tag->GetActorRotation()).ToString(), dotProduct);
-			DestroyFirstMovementTag();
+			prevTarget->Kill();
 		}
 	}
-	SetActorLocation(newPos + moveVector);
-}
-
-void ASnakePiece::DestroyFirstMovementTag() {
-	if (movementQueue.Num() == 0)
-	{
-		return;
+	
+	if (target) {
+		float ratio = distance_segment / FVector::Distance(startPosition, target->GetActorLocation());
+		//UE_LOG(LogTemp, Warning, TEXT("ratio : %f"), r);
+		SetActorLocation(FMath::Lerp(startPosition, target->GetActorLocation(), ratio));
 	}
-
-	AMovementTag* tagToDestroy = movementQueue[0];
-	movementQueue.RemoveAt(0);
-	if (isLast) 
+	else 
 	{
-		tagToDestroy->Destroy();
+		SetActorLocation(GetActorLocation() + GetVelocityVector().GetSafeNormal() * distance_segment);
+		distance_segment = 0;
 	}
 }
+
 
 FVector ASnakePiece::GetVelocityVector() 
 {

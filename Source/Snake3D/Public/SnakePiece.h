@@ -29,8 +29,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void AddMovementTag(AMovementTag* tag);
-	void SetTarget(AMovementTag* newTarget);
+	void SetTarget(AMovementTag* newTarget, bool isfromTrigger);
+	AMovementTag* GetTarget();
 
 	UPROPERTY()
 		class UMyPawnMovementComponent* OurMovementComponent;
@@ -41,11 +41,13 @@ public:
 private:
 
 	float Radius;
+	float ActualPathLength;
+	float distance_segment;
 	AMovementTag* target;
-	TArray<AMovementTag*> movementQueue;
+	FVector startPosition;
+
 	void MoveForward(float AxisValue);
 	void UpdateRotation(FRotator rotation);
 	void SpecialMove();
-	void DestroyFirstMovementTag();
 	FVector GetVelocityVector();
 };

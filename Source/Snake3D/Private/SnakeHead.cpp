@@ -293,8 +293,8 @@ void ASnakeHead::SpawnMovementTag()
 	SpawnedTagRef->id = tagCount++;
 	if (lastTagSpawned) {
 		lastTagSpawned->SetNext(SpawnedTagRef);
-		lastTagSpawned = SpawnedTagRef;
 	}
+	lastTagSpawned = SpawnedTagRef;
 }
 
 //Others
