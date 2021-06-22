@@ -28,7 +28,6 @@ public:
 	void SetNext(AMovementTag* nextTag);
 	AMovementTag* GetNext();
 	void Kill();
-	int id;
 
 private:
 	float distanceToNext;

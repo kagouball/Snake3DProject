@@ -23,6 +23,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 		class UTextBlock* TXTScore;
 
+
 	void UpdateScore(int32 Value);
 
 	void StoreWidgetAnimations();

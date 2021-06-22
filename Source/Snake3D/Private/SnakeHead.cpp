@@ -12,6 +12,7 @@
 #include "MovementTag.h"
 #include "PlayField.h"
 #include "PlayerHUD.h"
+#include "SnakePlayer.h"
 
 // Sets default values
 ASnakeHead::ASnakeHead()
@@ -24,7 +25,6 @@ ASnakeHead::ASnakeHead()
 	RollValue = 0.f;
 	radius = 20.f;
 	Score = 0;
-	tagCount = 0;
 	isCameraMoving = false;
 	makeAngle = false;
 	personMode = TPS;
@@ -65,6 +65,7 @@ ASnakeHead::ASnakeHead()
 	//listener
 	OnActorBeginOverlap.AddDynamic(this, &ASnakeHead::OnOverlapBegin);
 }
+
 
 // Called when the game starts or when spawned
 void ASnakeHead::BeginPlay()
@@ -128,11 +129,16 @@ UPawnMovementComponent* ASnakeHead::GetMovementComponent() const
 	return OurMovementComponent;
 }
 
+void ASnakeHead::SetPlayer(ASnakePlayer* p)
+{
+	player = p;
+}
+
 void ASnakeHead::MoveForward(float AxisValue)
 {
 	float FrameRate = Tools::GetSafeFramerate(GetWorld()->GetDeltaSeconds());
 	FVector loc = GetActorLocation();
-	loc += GetActorForwardVector() * ((AxisValue * 100.f) / FrameRate);
+	loc += GetActorForwardVector() * ((AxisValue * 100.f) / FrameRate);	//To get a constant value depending of framerate
 	SetActorLocation(loc);
 }
 
@@ -277,7 +283,6 @@ void ASnakeHead::SpawnPiece(FVector Location, FRotator Rotation)
 	{
 		return;
 	}
-
 	corps.Add(SpawnedActorRef);
 	if (LastPiece) 
 	{
@@ -290,7 +295,6 @@ void ASnakeHead::SpawnMovementTag()
 {
 	FActorSpawnParameters SpawnParams;
 	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, GetActorLocation(), GetActorRotation(), SpawnParams);
-	SpawnedTagRef->id = tagCount++;
 	if (lastTagSpawned) {
 		lastTagSpawned->SetNext(SpawnedTagRef);
 	}
@@ -318,10 +322,10 @@ void ASnakeHead::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 
 void ASnakeHead::HitFood(AFood* food) 
 {
+	player->EatFood(food);
 	AddPiece();
-	food->Destroy();
 	if (Field) {
-		Field->SpawnNextFood();
+		Field->NextFood();
 	}
 	//Update HUD
 	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());

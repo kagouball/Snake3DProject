@@ -2,18 +2,15 @@
 
 #pragma once
 
-#include "MovementTag.h"
 #include "CoreMinimal.h"
+#include "Pool.h"
 
 /**
  * 
  */
-class SNAKE3D_API Tools
+class SNAKE3D_API FoodPool : public Pool
 {
 public:
-	Tools();
-	~Tools();
-
-	static float GetSafeFramerate(float deltaSeconds);
-
+	FoodPool();
+	~FoodPool();
 };

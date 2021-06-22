@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Engine/TriggerBox.h"
+#include "Food.h"
 #include "PlayField.generated.h"
 
+
+class AGameDirector;
 /**
  * Represente the field of the game 
  * It is use to spawn the food
@@ -18,16 +21,28 @@ class SNAKE3D_API APlayField : public ATriggerBox
 protected:
 	virtual void BeginPlay() override;
 
+	//void SpawnFood();
+
+
 public:
 
 	APlayField();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Food")
-		TSubclassOf<AActor> Food;
-
-	UFUNCTION()
-		void OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor);
-
 	UFUNCTION()
 		void SpawnNextFood();
+
+	UFUNCTION()
+		void NextFood();
+
+	void MoveFood(AFood* foodToMove);
+
+	void SetGameDirector(AGameDirector* gd);
+
+private:
+
+	FVector GetRandomPosition();
+
+	TArray<AFood*> foods;
+
+	AGameDirector* gameDirector;
 };

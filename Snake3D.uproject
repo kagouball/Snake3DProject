@@ -12,6 +12,11 @@
 				"Engine",
 				"UMG"
 			]
+		},
+		{
+			"Type": "Runtime",
+			"Name": "MyGameSettings",
+			"LoadingPhase": "Default"
 		}
 	],
 	"TargetPlatforms": [

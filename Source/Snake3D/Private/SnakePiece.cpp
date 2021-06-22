@@ -84,9 +84,9 @@ void ASnakePiece::SpecialMove() {
 		MoveForward(SPEED);
 		return;
 	}
-
+	//See here if you can do some optimization
 	distance_segment += SPEED * GetWorld()->GetDeltaSeconds() * 100.f;
-	while (distance_segment >= ActualPathLength) {
+	while (distance_segment >= ActualPathLength && target) {
 		distance_segment -= ActualPathLength;
 		AMovementTag* prevTarget = target;
 		UpdateRotation(target->GetActorRotation());
@@ -99,6 +99,7 @@ void ASnakePiece::SpecialMove() {
 	}
 	
 	if (target) {
+		//float ratio = distance_segment / ActualPathLength;
 		float ratio = distance_segment / FVector::Distance(startPosition, target->GetActorLocation());
 		//UE_LOG(LogTemp, Warning, TEXT("ratio : %f"), r);
 		SetActorLocation(FMath::Lerp(startPosition, target->GetActorLocation(), ratio));

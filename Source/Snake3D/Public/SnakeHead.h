@@ -8,12 +8,14 @@
 #include "GameFramework/Pawn.h"
 #include "SnakePiece.h"
 #include "MovementTag.h"
-#include "Snake3D/Public/Food.h"
+#include "Food.h"
 #include "Angle.h"
 #include "Tools.h"
 #include "SnakeHead.generated.h"
 
 #define SPEED 2.f
+
+class ASnakePlayer;
 
 UCLASS()
 class SNAKE3D_API ASnakeHead : public APawn
@@ -51,7 +53,6 @@ private:
 
 	float PitchValue, YawValue, RollValue;	//Rotation 
 	float radius;
-	float tagCount;
 	bool isCameraMoving;
 	bool makeAngle;
 	FQuat angle;
@@ -61,6 +62,9 @@ private:
 
 	UPROPERTY()
 		AMovementTag* lastTagSpawned;
+	UPROPERTY()
+		class ASnakePlayer* player;
+	
 	
 protected:
 	// Called when the game starts or when spawned
@@ -77,6 +81,9 @@ public:
 		class APlayField* Field;
 
 	int32 Score;
+
+	UFUNCTION()
+		void SetPlayer(ASnakePlayer* p);
 	
 	//Head
 	void MoveForward(float AxisValue);

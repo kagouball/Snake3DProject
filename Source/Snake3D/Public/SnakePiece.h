@@ -6,12 +6,13 @@
 #include "MovementTag.h"
 #include "GameFramework/Actor.h"
 #include "GameplayTagContainer.h"
+#include "Spawnable.h"
 #include "SnakePiece.generated.h"
 
 #define SPEED 2.f
 
 UCLASS()
-class SNAKE3D_API ASnakePiece : public AActor
+class SNAKE3D_API ASnakePiece : public AActor, public ISpawnable
 {
 	GENERATED_BODY()
 	

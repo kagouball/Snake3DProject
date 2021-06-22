@@ -3,8 +3,9 @@
 
 #include "PlayField.h"
 #include "DrawDebugHelpers.h"
+#include "GameDirector.h"
 #include "Math/UnrealMathUtility.h"
-#include "Food.h"
+
 
 APlayField::APlayField()
 {
@@ -19,21 +20,43 @@ APlayField::APlayField()
 void APlayField::BeginPlay() {
 	Super::BeginPlay();
 	DrawDebugBox(GetWorld(), GetActorLocation(), GetComponentsBoundingBox().GetExtent(), FColor::White, true, -1, 0, 10);
-}
-
-void APlayField::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
-{
+	SpawnNextFood();
 }
 
 void APlayField::SpawnNextFood()
 {
-	if (Food) {
-		FActorSpawnParameters SpawnParams;
-		FVector size = GetComponentsBoundingBox().GetExtent();
-		FVector mid = GetActorLocation();
-		FVector newPos = FVector(FMath::RandRange(mid.X-size.X, mid.X + size.X),
-			FMath::RandRange(mid.Y - size.Y, mid.Y + size.Y),
-			FMath::RandRange(mid.Z - size.Z, mid.Z + size.Z));
-		AFood* SpawnedFoodRef = GetWorld()->SpawnActor<AFood>(Food, newPos, GetActorRotation(), SpawnParams);
+	if (foods.Num()==0) {
+		foods.Add(gameDirector->SpawnFood(GetRandomPosition(), FRotator(0)));
 	}
+}
+
+FVector APlayField::GetRandomPosition()
+{
+	FVector size = GetComponentsBoundingBox().GetExtent();
+	FVector mid = GetActorLocation();
+	FVector newPos = FVector(
+		FMath::RandRange(mid.X - size.X, mid.X + size.X),
+		FMath::RandRange(mid.Y - size.Y, mid.Y + size.Y),
+		FMath::RandRange(mid.Z - size.Z, mid.Z + size.Z));
+	return newPos;
+}
+
+void APlayField::NextFood()
+{
+	if (foods.Num() == 0) {
+		SpawnNextFood();
+	}
+	else {
+		MoveFood(foods[0]);
+	}
+}
+
+void APlayField::MoveFood(AFood* foodToMove)
+{
+	foodToMove->SetActorLocation(GetRandomPosition());
+}
+
+void APlayField::SetGameDirector(AGameDirector* gd)
+{
+	gameDirector = gd;
 }
