@@ -12,8 +12,9 @@ AFood::AFood()
 	// Our root component will be a sphere that reacts to physics
 	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
 	RootComponent = SphereComponent;
+	SphereComponent->ComponentTags.Add(FName("FoodSphere"));
 	SphereComponent->InitSphereRadius(Radius);
-	SphereComponent->SetCollisionProfileName(TEXT("ActorSpere"));
+	SphereComponent->SetCollisionProfileName(TEXT("ActorSphere"));
 	// Create and position a mesh component so we can see where our sphere is
 	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	SphereVisual->SetupAttachment(RootComponent);
@@ -21,10 +22,11 @@ AFood::AFood()
 	static ConstructorHelpers::FObjectFinder<UMaterial> plane_material(TEXT("/Game/StarterContent/Props/Materials/M_Shelf.M_Shelf"));
 	if (SphereVisualAsset.Succeeded() && plane_material.Succeeded())
 	{
+		SphereVisual->ComponentTags.Add(FName("FoodVisual"));
 		SphereVisual->SetStaticMesh(SphereVisualAsset.Object);
 		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -Radius));
 		SphereVisual->SetWorldScale3D(FVector(Radius / 50));
-		SphereVisual->SetCollisionProfileName(TEXT("OverlapAll"));
+		SphereVisual->SetCollisionProfileName(TEXT("NoCollision"));
 		SphereVisual->SetMaterial(0, plane_material.Object);
 	}
 	OurMovementComponent = CreateDefaultSubobject<UMyPawnMovementComponent>(TEXT("CustomMovementComponent"));

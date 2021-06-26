@@ -6,6 +6,7 @@
 #include "SnakeHead.h"
 #include "Math/BoxSphereBounds.h" 
 #include "Components/SphereComponent.h" 
+#include "SnakePiece.h"
 
 AMovementTag::AMovementTag()
 {

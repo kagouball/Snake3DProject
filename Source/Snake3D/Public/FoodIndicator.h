@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Food.h"
 #include "FoodIndicator.generated.h"
 
 UCLASS()
@@ -22,11 +23,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(EditAnywhere, Category = "Target")
-		AActor* targetPosition;
+	void SetTarget(AFood* food);
 
 private:
 	void LookAtTarget();
-
+	AFood* target;
 };

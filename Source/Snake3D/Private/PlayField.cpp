@@ -20,14 +20,12 @@ APlayField::APlayField()
 void APlayField::BeginPlay() {
 	Super::BeginPlay();
 	DrawDebugBox(GetWorld(), GetActorLocation(), GetComponentsBoundingBox().GetExtent(), FColor::White, true, -1, 0, 10);
-	SpawnNextFood();
+	NextFood();
 }
 
 void APlayField::SpawnNextFood()
 {
-	if (foods.Num()==0) {
-		foods.Add(gameDirector->SpawnFood(GetRandomPosition(), FRotator(0)));
-	}
+	foods.Add(gameDirector->SpawnFood(GetRandomPosition(), FRotator(0)));
 }
 
 FVector APlayField::GetRandomPosition()
@@ -43,6 +41,7 @@ FVector APlayField::GetRandomPosition()
 
 void APlayField::NextFood()
 {
+	UE_LOG(LogTemp, Warning, TEXT("next food"));
 	if (foods.Num() == 0) {
 		SpawnNextFood();
 	}
@@ -53,7 +52,20 @@ void APlayField::NextFood()
 
 void APlayField::MoveFood(AFood* foodToMove)
 {
-	foodToMove->SetActorLocation(GetRandomPosition());
+	UE_LOG(LogTemp, Warning, TEXT("move food"));
+	FVector newPos = GetRandomPosition();
+	UE_LOG(LogTemp, Warning, TEXT("distance : %f"),FVector::Distance(newPos,foodToMove->GetActorLocation()));
+	//foodToMove->Destroy();
+	foodToMove->SetActorLocation(newPos);
+}
+
+AFood* APlayField::GetClosestFood(FVector Location)
+{
+	//not good, change it later plz
+	if (foods.Num() > 0) {
+		return foods[0];
+	}
+	return nullptr;
 }
 
 void APlayField::SetGameDirector(AGameDirector* gd)

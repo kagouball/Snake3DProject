@@ -6,6 +6,7 @@
 #include "MyPawnMovementComponent.h"
 #include "DrawDebugHelpers.h"
 #include "SnakeHead.h"
+#include "SnakePlayer.h"
  
 
 // Sets default values
@@ -13,7 +14,7 @@ ASnakePiece::ASnakePiece()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	isLast = true;
+	isLast = true; //always last when created
 	Radius = 20;
 	ActualPathLength = 0;
 	distance_segment = 0;
@@ -74,6 +75,11 @@ void ASnakePiece::SetTarget(AMovementTag* newTarget , bool isFromTrigger)
 	target = newTarget;
 }
 
+void ASnakePiece::SetPlayer(ASnakePlayer* p)
+{
+	player = p;
+}
+
 AMovementTag* ASnakePiece::GetTarget()
 {
 	return target;
@@ -81,11 +87,11 @@ AMovementTag* ASnakePiece::GetTarget()
 
 void ASnakePiece::SpecialMove() {
 	if (target == nullptr) {
-		MoveForward(SPEED);
+		MoveForward(player->GetPlayerSpeed());
 		return;
 	}
 	//See here if you can do some optimization
-	distance_segment += SPEED * GetWorld()->GetDeltaSeconds() * 100.f;
+	distance_segment += player->GetPlayerSpeed() * GetWorld()->GetDeltaSeconds() * 100.f;
 	while (distance_segment >= ActualPathLength && target) {
 		distance_segment -= ActualPathLength;
 		AMovementTag* prevTarget = target;
@@ -115,5 +121,5 @@ void ASnakePiece::SpecialMove() {
 FVector ASnakePiece::GetVelocityVector() 
 {
 	float frameRate = Tools::GetSafeFramerate(GetWorld()->GetDeltaSeconds());
-	return GetActorForwardVector() * (SPEED * 100.f) / frameRate;
+	return GetActorForwardVector() * (player->GetPlayerSpeed() * 100.f) / frameRate;
 }

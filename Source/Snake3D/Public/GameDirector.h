@@ -30,6 +30,8 @@ public:
 	AMovementTag* SpawnMovementTag(FVector Location, FRotator Rotation);
 	AFood* SpawnFood(FVector Location, FRotator Rotation);
 
+	AFood* GetClosestFoodTo(FVector Location);
+	void FoodHasBeenEaten(AFood* food);
 
 private:
 
@@ -42,6 +44,7 @@ private:
 		float startSpeed;
 	UPROPERTY(EditAnywhere)
 		TArray<ASnakePlayer*> players;
+	void InitPlayers();
 	
 	/*Spawner Part*/
 	UPROPERTY(EditAnywhere)

@@ -15,27 +15,64 @@ void AGameDirector::BeginPlay()
 {
 	Super::BeginPlay();
 	playField->SetGameDirector(this);
+	InitPlayers();
 }
 
 // Called every frame
 void AGameDirector::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 ASnakePiece* AGameDirector::SpawnSnakePiece(FVector Location, FRotator Rotation)
 {
-	return spawner->SpawnSnakePiece(Location, Rotation);
+	if (spawner)
+	{
+		return spawner->SpawnSnakePiece(Location, Rotation);
+	}
+	return nullptr;
 }
 
 AMovementTag* AGameDirector::SpawnMovementTag(FVector Location, FRotator Rotation)
 {
-	return spawner->SpawnMovementTag(Location, Rotation);
+	if (spawner)
+	{
+		return spawner->SpawnMovementTag(Location, Rotation);
+	}
+	return nullptr;
 }
 
 AFood* AGameDirector::SpawnFood(FVector Location, FRotator Rotation)
 {
-	return spawner->SpawnFood(Location,Rotation);
+	if (spawner)
+	{
+		return spawner->SpawnFood(Location, Rotation);
+	}
+	return nullptr;
+}
+
+AFood* AGameDirector::GetClosestFoodTo(FVector Location)
+{
+	if (playField)
+	{
+		return playField->GetClosestFood(Location);
+	}
+	return nullptr;
+}
+
+void AGameDirector::FoodHasBeenEaten(AFood* food)
+{
+	//food to reuse in the future, don't worrie
+	playField->NextFood();
+}
+
+void AGameDirector::InitPlayers()
+{
+	for(int i = 0; i<players.Num(); i++)
+	{
+		ASnakePlayer* player = players[i];
+		player->SetGameDirector(this);
+		player->UpdatePlayerSpeed(startSpeed);
+	}
 }
 

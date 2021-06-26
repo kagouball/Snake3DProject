@@ -35,7 +35,7 @@ public:
 		void NextFood();
 
 	void MoveFood(AFood* foodToMove);
-
+	AFood* GetClosestFood(FVector Location);
 	void SetGameDirector(AGameDirector* gd);
 
 private:

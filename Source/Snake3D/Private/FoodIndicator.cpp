@@ -16,7 +16,6 @@ AFoodIndicator::AFoodIndicator()
 void AFoodIndicator::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -26,9 +25,15 @@ void AFoodIndicator::Tick(float DeltaTime)
 	LookAtTarget();
 }
 
+void AFoodIndicator::SetTarget(AFood* food)
+{
+	target = food;
+}
+
 void AFoodIndicator::LookAtTarget()
 {
-	//SetActorRotation(UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), targetPosition->GetActorLocation()));
-	RootComponent->SetWorldRotation((RootComponent->GetComponentLocation() - targetPosition->GetActorLocation()).GetSafeNormal().Rotation() + FRotator(90, 0, 0));
+	if (target) {
+		RootComponent->SetWorldRotation((RootComponent->GetComponentLocation() - target->GetActorLocation()).GetSafeNormal().Rotation() + FRotator(90, 0, 0));
+	}
 }
 

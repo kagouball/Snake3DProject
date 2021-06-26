@@ -6,14 +6,11 @@
 #include "Engine/TriggerSphere.h"
 #include "GameplayTagContainer.h"
 #include "GameFramework/Pawn.h"
-#include "SnakePiece.h"
-#include "MovementTag.h"
 #include "Food.h"
 #include "Angle.h"
 #include "Tools.h"
+#include "Components/SphereComponent.h"
 #include "SnakeHead.generated.h"
-
-#define SPEED 2.f
 
 class ASnakePlayer;
 
@@ -22,31 +19,21 @@ class SNAKE3D_API ASnakeHead : public APawn
 {
 	GENERATED_BODY()
 
+	
 public:
 	// Sets default values for this pawn's properties
 	ASnakeHead();
-	//Piece to spawn
-	UPROPERTY(EditDefaultsOnly, Category = "PieceSnake")
-		TSubclassOf<AActor> Piece;
-	//Tag to spawn
-	UPROPERTY(EditDefaultsOnly, Category = "Tag")
-		TSubclassOf<ATriggerSphere> MovementTag;
 private:
-
 	UFUNCTION()
-		void SpawnPiece(FVector Location, FRotator Rotation);
-
+		void OnOverlapBegin2(class AActor* OverlappedActor, class AActor* OtherActor);
 	UFUNCTION()
-		void SpawnMovementTag();
-
+		void OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
-		void OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor);
+		void Collapse(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult);
+
 
 	UPROPERTY()
 		class UMyPawnMovementComponent* OurMovementComponent;
-
-	UPROPERTY()
-		class ASnakePiece* LastPiece; //Last piece of the snake's tale
 
 	UPROPERTY()
 		class USpringArmComponent* SpringArm;
@@ -56,14 +43,11 @@ private:
 	bool isCameraMoving;
 	bool makeAngle;
 	FQuat angle;
-	TArray<ASnakePiece*> corps;		//Snake piece list
 	enum CameraPersonModes{FPS,TPS};
 	CameraPersonModes personMode;
+	USphereComponent* sphereComponent;
 
-	UPROPERTY()
-		AMovementTag* lastTagSpawned;
-	UPROPERTY()
-		class ASnakePlayer* player;
+	ASnakePlayer* player;
 	
 	
 protected:
@@ -77,19 +61,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual UPawnMovementComponent* GetMovementComponent() const override;
 
-	UPROPERTY(EditAnywhere)
-		class APlayField* Field;
-
-	int32 Score;
-
-	UFUNCTION()
-		void SetPlayer(ASnakePlayer* p);
-	
 	//Head
 	void MoveForward(float AxisValue);
 	void Turn(float AxisValue);
 	void MoveTop(float AxisValue);
 	void Rotate(float AxisValue);
+	void UpdateRotation();
 	//Angle
 	void AngleTop();
 	void AngleBottom();
@@ -99,11 +76,11 @@ public:
 	void TurnRightCamera(float AxisValue);
 	void TurnUpCamera(float AxisValue);
 	void UpdateCamera();
-	//Other
-	void AddPiece();
 	void SwitchCameraPersonView();
 	void SetCameraPersonView(CameraPersonModes mode);
-	void UpdateRotation();
+	//Other
 	void Kill();
 	void HitFood(AFood* food);
+	//Setter
+	void SetPlayer(ASnakePlayer* p);
 };

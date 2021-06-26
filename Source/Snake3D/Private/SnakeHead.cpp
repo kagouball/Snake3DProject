@@ -3,7 +3,6 @@
 
 #include "SnakeHead.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Components/SphereComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -17,25 +16,22 @@
 // Sets default values
 ASnakeHead::ASnakeHead()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	//Values
+	radius = 20.f;
 	PitchValue = 0.f;
 	YawValue = 0.f;
 	RollValue = 0.f;
-	radius = 20.f;
-	Score = 0;
 	isCameraMoving = false;
 	makeAngle = false;
 	personMode = TPS;
-	if (!Field) {
-		Field = NULL;
-	}
 	// Our root component will be a sphere that reacts to physics
 	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
 	RootComponent = SphereComponent;
 	SphereComponent->InitSphereRadius(radius);
-	SphereComponent->SetCollisionProfileName(TEXT("Pawn"));
+	//SphereComponent->SetGenerateOverlapEvents(true);
+	//SphereComponent->SetCollisionProfileName(FName("Pawn"));
 	// Create and position a mesh component so we can see where our sphere is
 	UStaticMeshComponent* SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	SphereVisual->SetupAttachment(RootComponent);
@@ -44,7 +40,9 @@ ASnakeHead::ASnakeHead()
 	{
 		SphereVisual->SetStaticMesh(SphereVisualAsset.Object);
 		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -radius));
-		SphereVisual->SetWorldScale3D(FVector(radius/50));
+		SphereVisual->SetWorldScale3D(FVector(radius / 50));
+		//SphereVisual->SetGenerateOverlapEvents(false);
+		//SphereVisual->SetCollisionProfileName(FName("NoCollision"));
 	}
 	// Use a spring arm to give the camera smooth, natural-feeling motion.
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraAttachmentArm"));
@@ -53,6 +51,7 @@ ASnakeHead::ASnakeHead()
 	SpringArm->SetRelativeLocation(FVector(0.f, 0.f, 40.f));
 	SpringArm->TargetArmLength = 200.0f;
 	SpringArm->bEnableCameraLag = true;
+	//SpringArm->bDoCollisionTest = false;
 	SpringArm->CameraLagSpeed = 3.0f;
 	// Create a camera and attach to our spring arm
 	UCameraComponent* Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("ActualCamera"));
@@ -63,7 +62,10 @@ ASnakeHead::ASnakeHead()
 	OurMovementComponent = CreateDefaultSubobject<UMyPawnMovementComponent>(TEXT("CustomMovementComponent"));
 	OurMovementComponent->UpdatedComponent = RootComponent;
 	//listener
-	OnActorBeginOverlap.AddDynamic(this, &ASnakeHead::OnOverlapBegin);
+	//OnActorBeginOverlap.AddDynamic(this, &ASnakeHead::OnOverlapBegin);
+	sphereComponent = SphereComponent;
+	//SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ASnakeHead::OnOverlap);
+	//OnActorBeginOverlap.Clear();
 }
 
 
@@ -71,13 +73,17 @@ ASnakeHead::ASnakeHead()
 void ASnakeHead::BeginPlay()
 {
 	Super::BeginPlay();
+	//sphereComponent->SetGenerateOverlapEvents(true);
+	sphereComponent->SetCollisionProfileName(FName("Pawn"));
+	//sphereComponent->OnComponentBeginOverlap.Clear();
+	sphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ASnakeHead::OnOverlap);
 }
 
 // Called every frame
 void ASnakeHead::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	MoveForward(SPEED);
+	MoveForward(player->GetPlayerSpeed());
 	UpdateRotation();
 }
 
@@ -91,7 +97,7 @@ void ASnakeHead::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAxis("MoveTop", this, &ASnakeHead::MoveTop);
 	PlayerInputComponent->BindAxis("Rotate", this, &ASnakeHead::Rotate);
 	//Button
-	PlayerInputComponent->BindAction("SpawnObject", IE_Pressed, this, &ASnakeHead::AddPiece);
+	PlayerInputComponent->BindAction("SpawnObject", IE_Pressed, player, &ASnakePlayer::AddPiece);
 	PlayerInputComponent->BindAction("SwitchPersonView", IE_Pressed, this, &ASnakeHead::SwitchCameraPersonView);
 	//Angle
 	PlayerInputComponent->BindAction("AngleRight", IE_Pressed, this, &ASnakeHead::AngleRight);
@@ -100,38 +106,11 @@ void ASnakeHead::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction("AngleBottom", IE_Pressed, this, &ASnakeHead::AngleBottom);
 }
 
-void ASnakeHead::AddPiece()
-{
-	float distance = 2.f*radius+1.f;
-	FVector actualPos;
-	FVector vec;
-	FRotator rotation;
-	if (LastPiece) 
-	{
-		actualPos = LastPiece->GetActorLocation();
-		vec = LastPiece->GetActorForwardVector();
-		rotation = LastPiece->GetActorRotation();
-	}
-	else 
-	{
-		actualPos = GetActorLocation();
-		vec = GetActorForwardVector();
-		rotation = GetActorRotation();
-	}
-	FVector newPos = actualPos - (vec*distance);
-	SpawnPiece(newPos, rotation);
-}
-
 //Movement
 
 UPawnMovementComponent* ASnakeHead::GetMovementComponent() const
 {
 	return OurMovementComponent;
-}
-
-void ASnakeHead::SetPlayer(ASnakePlayer* p)
-{
-	player = p;
 }
 
 void ASnakeHead::MoveForward(float AxisValue)
@@ -207,10 +186,7 @@ void ASnakeHead::UpdateRotation() {
 
 	AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);
 	//Spawn tag
-	if (LastPiece)
-	{
-		SpawnMovementTag();
-	}
+	player->HeadMove();
 	YawValue = 0.f;
 	RollValue = 0.f;
 	PitchValue = 0.f;
@@ -272,79 +248,79 @@ void ASnakeHead::SetCameraPersonView(CameraPersonModes mode) {
 	}
 }
 
-
-
-/*Spawner*/
-void ASnakeHead::SpawnPiece(FVector Location, FRotator Rotation)
-{
-	FActorSpawnParameters SpawnParams;
-	ASnakePiece* SpawnedActorRef = GetWorld()->SpawnActor<ASnakePiece>(Piece, Location, Rotation, SpawnParams);
-	if (SpawnedActorRef == NULL) 
-	{
-		return;
-	}
-	corps.Add(SpawnedActorRef);
-	if (LastPiece) 
-	{
-		LastPiece->isLast = false;
-	}
-	LastPiece = SpawnedActorRef;	
-}
-
-void ASnakeHead::SpawnMovementTag() 
-{
-	FActorSpawnParameters SpawnParams;
-	AMovementTag* SpawnedTagRef = GetWorld()->SpawnActor<AMovementTag>(MovementTag, GetActorLocation(), GetActorRotation(), SpawnParams);
-	if (lastTagSpawned) {
-		lastTagSpawned->SetNext(SpawnedTagRef);
-	}
-	lastTagSpawned = SpawnedTagRef;
-}
-
 //Others
 
-void ASnakeHead::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
+void ASnakeHead::OnOverlapBegin2(AActor* OverlappedActor, AActor* OtherActor)
 {
 	if (OtherActor->ActorHasTag(FName("Snake.Piece"))) 
 	{
 		ASnakePiece* piece = dynamic_cast<ASnakePiece*>(OtherActor);
-		if (piece && corps.IndexOfByKey(piece) != 0) //check if its not the first element of the tail (issue with collision)
-		{
-			Kill();
-		}
+		player->HitPiece(piece);
 	}
 	else if (OtherActor->ActorHasTag(FName("Food"))) 
 	{
 		AFood* food = dynamic_cast<AFood*>(OtherActor);
+		
+		UE_LOG(LogTemp, Warning, TEXT("actor collideur : %s"), *OverlappedActor->GetFName().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("actor collidé : %s"), *OtherActor->GetActorLabel());
+		UE_LOG(LogTemp, Warning, TEXT("time : %f"),GetWorld()->GetTimeSeconds());
+		UE_LOG(LogTemp, Warning, TEXT("food collision : %s"),*food->GetActorLocation().ToString());
+
 		HitFood(food);
+	}
+}
+
+void ASnakeHead::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->ActorHasTag(FName("Snake.Piece")))
+	{
+		ASnakePiece* piece = dynamic_cast<ASnakePiece*>(OtherActor);
+		player->HitPiece(piece);
+	}
+	else if (OtherActor->ActorHasTag(FName("Food")))
+	{
+		AFood* food = dynamic_cast<AFood*>(OtherActor);
+
+		UE_LOG(LogTemp, Warning, TEXT("comp collideur : %s"), *OverlappedComp->GetFName().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("actor collidé : %s"), *OtherActor->GetActorLabel());
+		UE_LOG(LogTemp, Warning, TEXT("time : %f"), GetWorld()->GetTimeSeconds());
+		UE_LOG(LogTemp, Warning, TEXT("food collision : %s"), *food->GetActorLocation().ToString());
+
+		HitFood(food);
+	}
+}
+
+void ASnakeHead::Collapse(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Collision"));
+	if (OtherActor->ActorHasTag(FName("Food")))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Collision Food"));
+		if (OtherComp->ComponentHasTag(FName("FoodVisual"))) {
+			UE_LOG(LogTemp, Warning, TEXT("Collision Food Visual"));
+		}
+		else if (OtherComp->ComponentHasTag(FName("FoodSphere"))) {
+			UE_LOG(LogTemp, Warning, TEXT("Collision Food Sphere"));
+		}
+		
 	}
 }
 
 void ASnakeHead::HitFood(AFood* food) 
 {
+
 	player->EatFood(food);
-	AddPiece();
-	if (Field) {
-		Field->NextFood();
-	}
-	//Update HUD
-	APlayerHUD* PlayerHUD = Cast<APlayerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-	if (PlayerHUD) 
-	{
-		Score += 1;
-		PlayerHUD->UpdateScore(Score);
-	}
 }
 
-void ASnakeHead::Kill() {
-	
-	for (ASnakePiece* piece : corps) {
-		 piece->Destroy();
-	}
-	//Destroy();
+void ASnakeHead::Kill() 
+{
 	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
+void ASnakeHead::SetPlayer(ASnakePlayer* p)
+{
+	player = p;
+}
 
 
 

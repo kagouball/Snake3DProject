@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "FoodIndicator.h"
 #include "SnakeHead.h"
+#include "SnakePiece.h"
 #include "PlayerHUD.h"
 #include "SnakePlayer.generated.h"
 
@@ -20,7 +21,6 @@ class SNAKE3D_API ASnakePlayer : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ASnakePlayer();
-	//ASnakePlayer(float startPlayerSpeed);
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,20 +30,34 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	float GetPlayerSpeed();
+
 	void UpdatePlayerSpeed(float newSpeed);
+	void UpdateIndicatorTarget();
 	void SetGameDirector(AGameDirector* gd);
 	void EatFood(AFood* food);
+	void HeadMove();
+	void HitPiece(ASnakePiece* piece);
+
+	UFUNCTION()
+		void AddPiece();
 
 private:
 
 	float playerSpeed;
-
+	float itemRadius;
+	int score;
+	/*Manually edit*/
 	UPROPERTY(EditAnywhere)
 		AFoodIndicator* foodIndicator;
 	UPROPERTY(EditAnywhere)
 		ASnakeHead* head;
+	/*Particular variable*/
 	TArray<ASnakePiece*> tail;
-
 	APlayerHUD* playerHUD;
 	AGameDirector* gameDirector;
+	AMovementTag* lastTagSpawned;
+
+	/*Functions*/
+	void Kill();
 };

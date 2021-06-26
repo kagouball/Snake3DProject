@@ -9,7 +9,7 @@
 #include "Spawnable.h"
 #include "SnakePiece.generated.h"
 
-#define SPEED 2.f
+class ASnakePlayer;
 
 UCLASS()
 class SNAKE3D_API ASnakePiece : public AActor, public ISpawnable
@@ -31,6 +31,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void SetTarget(AMovementTag* newTarget, bool isfromTrigger);
+	void SetPlayer(ASnakePlayer* p);
 	AMovementTag* GetTarget();
 
 	UPROPERTY()
@@ -46,6 +47,7 @@ private:
 	float distance_segment;
 	AMovementTag* target;
 	FVector startPosition;
+	ASnakePlayer* player;
 
 	void MoveForward(float AxisValue);
 	void UpdateRotation(FRotator rotation);
